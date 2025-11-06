@@ -4,9 +4,15 @@
   padding: 20px;
 }
 
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* Home Page Styles */
 .home-page {
-  max-width: 450px;
+  max-width: none;
   margin: 0 auto;
   padding: 20px;
   padding-bottom: 100px;
