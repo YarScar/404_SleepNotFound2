@@ -28,8 +28,11 @@ export default function TimerPage() {
   ]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [songName, setSongName] = useState(playlist[0]?.name || 'No song loaded');
-  const [loopPlaylist, setLoopPlaylist] = useState(true);
+  // when true, loop the current track; when false, advance through the playlist
+  const [loopTrack, setLoopTrack] = useState(true);
   const audioRef = useRef(null);
+  const audioCtxRef = useRef(null);
+  const gainRef = useRef(null);
 
   // Load default timer on component mount and when localStorage changes
   useEffect(() => {
@@ -68,7 +71,9 @@ export default function TimerPage() {
   }, [isRunning, minutes, seconds]);
 
   const handlePausePlay = () => {
-    setIsRunning(!isRunning);
+    setIsRunning(prev => !prev);
+    // toggle music play state to match timer
+    setIsPlaying(prev => !prev);
   };
 
   const handleRefresh = () => {
@@ -151,12 +156,14 @@ export default function TimerPage() {
   const handleStalled = () => {
     // Attempt to recover from stalled state
     if (audioRef.current && isPlaying) {
-      const currentPos = audioRef.current.currentTime;
-      audioRef.current.load();
-      audioRef.current.currentTime = currentPos;
-      audioRef.current.play().catch(err => {
-        console.error('Error recovering from stall:', err);
-      });
+      // Avoid calling load() which can cause audible gaps. Try a gentle resume.
+      try {
+        const currentPos = Math.max(0, audioRef.current.currentTime - 0.05);
+        audioRef.current.currentTime = currentPos;
+        audioRef.current.play().catch(err => console.error('Error recovering from stall:', err));
+      } catch (err) {
+        console.error('Stall recovery failed', err);
+      }
     }
   };
 
@@ -185,48 +192,76 @@ export default function TimerPage() {
   };
 
   // Playlist functions
-  const loadTrack = (index) => {
-    if (playlist[index] && audioRef.current) {
-      audioRef.current.src = playlist[index].url;
-      setSongName(playlist[index].name);
-      setCurrentTrackIndex(index);
-      setCurrentTime(0);
-      if (isPlaying) {
-        audioRef.current.play().catch(err => {
-          console.error('Error playing audio:', err);
-        });
+  // safely change src with a short fade to avoid audible cuts
+  const safeSetSrc = (index, play = false) => {
+    if (!audioRef.current) return;
+    const track = playlist[index];
+    if (!track) return;
+    const el = audioRef.current;
+    const gain = gainRef.current;
+    const ctx = audioCtxRef.current;
+    setSongName(track.name);
+    setCurrentTrackIndex(index);
+    setCurrentTime(0);
+    // If WebAudio available, fade out, switch src, fade in
+    if (ctx && gain) {
+      try {
+        const now = ctx.currentTime;
+        gain.cancelScheduledValues(now);
+        gain.setValueAtTime(gain.value, now);
+        gain.linearRampToValueAtTime(0.0001, now + 0.06);
+        // after fade out, set src and optionally play
+        setTimeout(() => {
+          try {
+            el.src = track.url;
+            el.currentTime = 0;
+            if (play) {
+              // resume audio context if suspended (autoplay policies)
+              if (ctx.state === 'suspended') ctx.resume().catch(()=>{});
+              el.play().catch(err => console.error('Error playing after switch:', err));
+              setIsPlaying(true);
+            }
+            const now2 = ctx.currentTime;
+            gain.setValueAtTime(0.0001, now2);
+            gain.linearRampToValueAtTime(1.0, now2 + 0.12);
+          } catch (err) {
+            console.error('Error switching track with fade', err);
+          }
+        }, 80);
+      } catch (err) {
+        console.error('Fade error', err);
+        // fallback: immediate switch
+        el.src = track.url;
+        if (play) { el.play().catch(()=>{}); setIsPlaying(true); }
       }
+    } else {
+      // no WebAudio: just switch src and play
+      el.src = track.url;
+      el.currentTime = 0;
+      if (play) {
+        el.play().catch(err => console.error('Error playing track:', err));
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const loadTrack = (index, play = false) => {
+    if (index >= 0 && index < playlist.length) {
+      safeSetSrc(index, play);
     }
   };
 
   const playNext = () => {
     if (playlist.length > 0) {
       const nextIndex = (currentTrackIndex + 1) % playlist.length;
-      loadTrack(nextIndex);
-      setIsPlaying(true);
-      setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.play().catch(err => {
-            console.error('Error playing next track:', err);
-          });
-        }
-      }, 100);
+      loadTrack(nextIndex, true);
     }
   };
 
   const playPrevious = () => {
     if (playlist.length > 0) {
       const prevIndex = currentTrackIndex === 0 ? playlist.length - 1 : currentTrackIndex - 1;
-      loadTrack(prevIndex);
-      if (isPlaying) {
-        setTimeout(() => {
-          if (audioRef.current) {
-            audioRef.current.play().catch(err => {
-              console.error('Error playing previous track:', err);
-            });
-          }
-        }, 100);
-      }
+      loadTrack(prevIndex, isPlaying);
     }
   };
 
@@ -234,18 +269,37 @@ export default function TimerPage() {
     // When a track ends
     if (playlist.length > 0) {
       const isLastTrack = currentTrackIndex === playlist.length - 1;
-      
-      if (loopPlaylist || !isLastTrack) {
-        // Play next track if loop is on OR if it's not the last track
-        playNext();
-      } else {
-        // Stop playing if loop is off and we're at the last track
-        setIsPlaying(false);
+      // audio.loop flag handles repeating current track when loopTrack is true
+      if (!loopTrack) {
+        if (!isLastTrack) playNext();
+        else setIsPlaying(false);
       }
     } else {
       setIsPlaying(false);
     }
   };
+  
+  // sync audio.loop with loopTrack
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.loop = !!loopTrack;
+  }, [loopTrack]);
+  
+  // sync play/pause state to audio element
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      const ctx = audioCtxRef.current;
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(()=>{}).then(() => {
+          audioRef.current.play().catch(err => console.error('Error playing audio:', err));
+        });
+      } else {
+        audioRef.current.play().catch(err => console.error('Error playing audio:', err));
+      }
+    } else {
+      try { audioRef.current.pause(); } catch {}
+    }
+  }, [isPlaying, currentTrackIndex]);
 
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -328,6 +382,7 @@ export default function TimerPage() {
         <div className="music-info">
           <audio 
             ref={audioRef}
+            src={playlist[currentTrackIndex]?.url}
             preload="auto"
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
@@ -388,9 +443,9 @@ export default function TimerPage() {
             </button>
             
             <button 
-              className={`music-loop-button ${loopPlaylist ? 'active' : ''}`}
-              onClick={() => setLoopPlaylist(!loopPlaylist)}
-              title={loopPlaylist ? 'Loop: On' : 'Loop: Off'}
+              className={`music-loop-button ${loopTrack ? 'active' : ''}`}
+              onClick={() => setLoopTrack(!loopTrack)}
+              title={loopTrack ? 'Loop track: On' : 'Loop track: Off'}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                 <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
