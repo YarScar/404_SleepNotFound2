@@ -13,6 +13,14 @@ export default function ProfilePage() {
   });
   const [nameError, setNameError] = useState('');
   const fileInputRef = useRef(null);
+  
+  // Timer preference state
+  const [isEditingTimer, setIsEditingTimer] = useState(false);
+  const [defaultTimer, setDefaultTimer] = useState(() => {
+    return parseInt(localStorage.getItem('najahDefaultTimer')) || 25;
+  });
+  const [tempTimer, setTempTimer] = useState(defaultTimer);
+  const [timerError, setTimerError] = useState('');
 
   // List of inappropriate words to filter
   const inappropriateWords = [
@@ -91,6 +99,41 @@ export default function ProfilePage() {
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
+  };
+
+  // Timer preference handlers
+  const handleTimerEdit = () => {
+    setIsEditingTimer(true);
+    setTempTimer(defaultTimer);
+  };
+
+  const handleTimerChange = (e) => {
+    const value = e.target.value;
+    const numValue = parseInt(value);
+    
+    if (value === '' || (numValue >= 1 && numValue <= 120)) {
+      setTempTimer(value === '' ? '' : numValue);
+      setTimerError('');
+    } else {
+      setTimerError('Timer must be between 1 and 120 minutes');
+    }
+  };
+
+  const handleSaveTimer = () => {
+    if (tempTimer === '' || tempTimer < 1 || tempTimer > 120) {
+      setTimerError('Please enter a valid timer (1-120 minutes)');
+      return;
+    }
+    setDefaultTimer(tempTimer);
+    localStorage.setItem('najahDefaultTimer', tempTimer.toString());
+    setIsEditingTimer(false);
+    setTimerError('');
+  };
+
+  const handleCancelTimerEdit = () => {
+    setTempTimer(defaultTimer);
+    setIsEditingTimer(false);
+    setTimerError('');
   };
 
   // Sample achievement data
@@ -213,15 +256,38 @@ export default function ProfilePage() {
         <div className="preferences-list">
           <div className="preference-item">
             <span className="preference-label">Default Timer</span>
-            <span className="preference-value">25 minutes</span>
+            {isEditingTimer ? (
+              <div className="timer-edit-container">
+                <input 
+                  type="number" 
+                  value={tempTimer}
+                  onChange={handleTimerChange}
+                  className={`timer-input-field ${timerError ? 'error' : ''}`}
+                  min="1"
+                  max="120"
+                  placeholder="Minutes"
+                />
+                <div className="timer-edit-buttons">
+                  <button onClick={handleSaveTimer} className="timer-save-btn" disabled={timerError !== ''}>✓</button>
+                  <button onClick={handleCancelTimerEdit} className="timer-cancel-btn">✕</button>
+                </div>
+                {timerError && <p className="timer-error">{timerError}</p>}
+              </div>
+            ) : (
+              <div className="preference-value-container">
+                <span className="preference-value">{defaultTimer} minutes</span>
+                <button onClick={handleTimerEdit} className="preference-edit-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
           <div className="preference-item">
             <span className="preference-label">Notifications</span>
             <span className="preference-value">Enabled</span>
-          </div>
-          <div className="preference-item">
-            <span className="preference-label">Theme</span>
-            <span className="preference-value">Light Mode</span>
           </div>
         </div>
       </div>

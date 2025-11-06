@@ -2,12 +2,23 @@ import { useState, useEffect } from 'react';
 import '../Styles/Pages.css';
 
 export default function TimerPage() {
-  const [minutes, setMinutes] = useState(25);
+  const defaultTimerMinutes = parseInt(localStorage.getItem('najahDefaultTimer')) || 25;
+  
+  const [minutes, setMinutes] = useState(defaultTimerMinutes);
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [inputMinutes, setInputMinutes] = useState('25');
+  const [inputMinutes, setInputMinutes] = useState(String(defaultTimerMinutes).padStart(2, '0'));
   const [inputSeconds, setInputSeconds] = useState('00');
+
+  // Load default timer on component mount and when localStorage changes
+  useEffect(() => {
+    const savedTimer = parseInt(localStorage.getItem('najahDefaultTimer')) || 25;
+    if (!isRunning && minutes === defaultTimerMinutes && seconds === 0) {
+      setMinutes(savedTimer);
+      setInputMinutes(String(savedTimer).padStart(2, '0'));
+    }
+  }, []);
 
   useEffect(() => {
     let interval;
@@ -33,10 +44,11 @@ export default function TimerPage() {
   };
 
   const handleRefresh = () => {
+    const savedTimer = parseInt(localStorage.getItem('najahDefaultTimer')) || 25;
     setIsRunning(false);
-    setMinutes(25);
+    setMinutes(savedTimer);
     setSeconds(0);
-    setInputMinutes('25');
+    setInputMinutes(String(savedTimer).padStart(2, '0'));
     setInputSeconds('00');
   };
 
@@ -131,14 +143,26 @@ export default function TimerPage() {
           <button 
             className="control-button pause-play-button" 
             onClick={handlePausePlay}
+            title={isRunning ? 'Pause timer' : 'Start timer'}
           >
-            {isRunning ? 'Pause' : 'Pause/Play'}
+            {isRunning ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            )}
           </button>
           <button 
             className="control-button refresh-button" 
             onClick={handleRefresh}
+            title="Reset timer"
           >
-            Refresh
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
           </button>
         </div>
 

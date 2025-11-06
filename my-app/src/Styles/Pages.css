@@ -341,6 +341,15 @@
 .pause-play-button {
   background: #A78BFA;
   color: white;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pause-play-button svg {
+  width: 20px;
+  height: 20px;
 }
 
 .pause-play-button:hover {
@@ -350,6 +359,15 @@
 .refresh-button {
   background: #9CA3AF;
   color: white;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refresh-button svg {
+  width: 20px;
+  height: 20px;
 }
 
 .refresh-button:hover {
@@ -767,6 +785,112 @@
   padding: 6px 15px;
   border-radius: 20px;
   border: 1px solid #E5E7EB;
+}
+
+.preference-value-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preference-edit-btn {
+  background: transparent;
+  border: none;
+  color: #3B82F6;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s;
+}
+
+.preference-edit-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.preference-edit-btn:hover {
+  color: #2563EB;
+}
+
+.timer-edit-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.timer-input-field {
+  font-size: 0.9rem;
+  color: #333;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 2px solid #3B82F6;
+  width: 100px;
+  text-align: center;
+  outline: none;
+}
+
+.timer-input-field.error {
+  border-color: #DC2626;
+  background: #FEE2E2;
+}
+
+.timer-input-field:focus {
+  border-color: #2563EB;
+}
+
+.timer-edit-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.timer-save-btn,
+.timer-cancel-btn {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #333;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-save-btn {
+  background: #10B981;
+  color: white;
+}
+
+.timer-save-btn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.timer-save-btn:disabled {
+  background: #9CA3AF;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.timer-cancel-btn {
+  background: #E5E7EB;
+  color: #333;
+}
+
+.timer-cancel-btn:hover {
+  background: #D1D5DB;
+}
+
+.timer-error {
+  color: #DC2626;
+  font-size: 0.75rem;
+  margin: 0;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .profile-actions {
