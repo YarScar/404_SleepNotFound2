@@ -263,7 +263,14 @@ export default function TimerPage() {
             onCanPlayThrough={handleCanPlayThrough}
             onWaiting={handleWaiting}
             onStalled={handleStalled}
-            onEnded={() => setIsPlaying(false)}
+            onEnded={() => {
+              // restart playback and keep UI in playing state
+              if (audioRef.current) {
+                audioRef.current.currentTime = 0;
+                audioRef.current.play().catch(err => console.error('Error replaying audio:', err));
+                setIsPlaying(true);
+              }
+            }}
             loop
           >
             <source src="/Lofi.mp3" type="audio/mpeg" />
