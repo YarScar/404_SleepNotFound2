@@ -1,4 +1,3 @@
-import React from 'react';
 import '../Styles/Pages.css';
 
 export default function CloudDecoration() {

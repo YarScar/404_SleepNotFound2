@@ -1,10 +1,10 @@
 import "../Styles/Pages.css";
 
-export default function DashboardCard({ title, value }) {
+export default function DashboardCard({ title, value, color = "#333" }) {
   return (
     <div className="dashboard-card">
-      <h2>{title}</h2>
-      <p>{value}</p>
+      <h2 className="card-value" style={{ color }}>{value}</h2>
+      <p className="card-title">{title}</p>
     </div>
   );
 }

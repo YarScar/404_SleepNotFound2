@@ -1,4 +1,3 @@
-import React from 'react';
 import { Home, Clock, BookOpen, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import '../Styles/Pages.css'
