@@ -188,6 +188,11 @@ const audioService = (() => {
           gains[active].gain.value = volume;
         }
         emit('trackchange', currentIndex);
+        // Emit metadata for the new track
+        const newEl = audioEls[active];
+        if (newEl.duration && !isNaN(newEl.duration)) {
+          emit('loadedmetadata', { target: newEl });
+        }
         // Only pause if we shouldn't be playing
         if (!play && !audioEls[active].paused) {
           console.log('audioService: Pausing after track change (play=false)');
@@ -210,6 +215,11 @@ const audioService = (() => {
       active = next;
       currentIndex = index;
       emit('trackchange', currentIndex);
+      // Emit metadata for the new track
+      const newEl = audioEls[active];
+      if (newEl.duration && !isNaN(newEl.duration)) {
+        emit('loadedmetadata', { target: newEl });
+      }
     }
   }
 
