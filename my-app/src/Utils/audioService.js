@@ -17,6 +17,7 @@ const audioService = (() => {
       el.preload = 'auto';
       el.crossOrigin = 'anonymous';
       el.style.display = 'none';
+      el.volume = volume; // Set initial volume
       document.body.appendChild(el);
     });
 
@@ -57,6 +58,8 @@ const audioService = (() => {
     ensure();
     if (playlist.length > 0) {
       audioEls[active].src = playlist[currentIndex].url;
+      audioEls[active].volume = volume; // Ensure volume is set
+      audioEls[active].load(); // Explicitly load the audio
     }
   }
 
@@ -67,9 +70,21 @@ const audioService = (() => {
 
   function play() {
     ensure();
+    console.log('audioService: play() called, active element:', active, 'src:', audioEls[active].src);
+    
     // try to resume audio context if suspended
-    if (ctx && ctx.state === 'suspended') ctx.resume().catch(()=>{});
-    return audioEls[active].play();
+    if (ctx && ctx.state === 'suspended') {
+      console.log('audioService: Resuming suspended audio context');
+      return ctx.resume().then(() => {
+        console.log('audioService: Context resumed, playing...');
+        return audioEls[active].play();
+      }).catch((err) => {
+        console.error('audioService resume/play error:', err);
+      });
+    }
+    return audioEls[active].play().catch((err) => {
+      console.error('audioService play error:', err, 'src:', audioEls[active].src);
+    });
   }
   function pause() {
     ensure();
@@ -86,6 +101,10 @@ const audioService = (() => {
     volume = Math.max(0, Math.min(1, v));
     ensure();
     audioEls.forEach(el => el.volume = volume);
+    // Also update the active gain node if using WebAudio
+    if (ctx && gains[active]) {
+      gains[active].gain.value = volume;
+    }
   }
 
   function getVolume() {
@@ -93,18 +112,39 @@ const audioService = (() => {
   }
 
   function setTrack(index, play = false) {
-    if (!playlist[index]) return;
+    if (!playlist[index]) {
+      console.error('audioService: No track at index', index);
+      return;
+    }
     ensure();
+    console.log('audioService: Setting track', index, playlist[index].name || playlist[index].url);
+    
     if (index === currentIndex) {
-      if (play) audioEls[active].play().catch(()=>{});
+      if (play) {
+        console.log('audioService: Playing current track');
+        audioEls[active].play().catch((err) => {
+          console.error('audioService play error (current track):', err);
+        });
+      }
       return;
     }
 
     const next = 1 - active;
     const nextEl = audioEls[next];
     try {
+      console.log('audioService: Loading new track into element', next);
       nextEl.src = playlist[index].url;
       nextEl.currentTime = 0;
+      nextEl.volume = volume; // Ensure volume is set for new track
+      nextEl.load(); // Explicitly load the new track
+      
+      // Add error listener for this track
+      nextEl.onerror = (e) => {
+        console.error('audioService: Failed to load track', playlist[index].name || playlist[index].url, e);
+      };
+      nextEl.onloadeddata = () => {
+        console.log('audioService: Track loaded successfully', playlist[index].name || playlist[index].url);
+      };
     } catch (e) {
       console.error('audioService set src error', e);
     }
@@ -114,34 +154,62 @@ const audioService = (() => {
       const now = ctx.currentTime;
       const fadeSec = Math.max(0, fadeMs / 1000);
       try {
-        gains[next].cancelScheduledValues(now);
-        gains[active].cancelScheduledValues(now);
-        gains[next].setValueAtTime(0.0001, now);
+        gains[next].gain.cancelScheduledValues(now);
+        gains[active].gain.cancelScheduledValues(now);
+        gains[next].gain.setValueAtTime(0.0001, now);
         // ensure next element plays so its buffer decodes
-        nextEl.play().catch(()=>{});
-        gains[next].linearRampToValueAtTime(1.0, now + fadeSec);
-        gains[active].setValueAtTime(gains[active].value || 1, now);
-        gains[active].linearRampToValueAtTime(0.0001, now + fadeSec);
+        console.log('audioService: Starting crossfade, playing next element');
+        nextEl.play().catch((err) => {
+          console.error('audioService: Failed to play during crossfade:', err);
+        });
+        gains[next].gain.linearRampToValueAtTime(volume, now + fadeSec); // Use volume variable
+        gains[active].gain.setValueAtTime(gains[active].gain.value || volume, now);
+        gains[active].gain.linearRampToValueAtTime(0.0001, now + fadeSec);
       } catch (err) {
         console.warn('audioService crossfade failed', err);
         // fallback to immediate switch
-        try { audioEls[active].pause(); nextEl.play().catch(()=>{}); } catch {}
+        try { 
+          audioEls[active].pause(); 
+          nextEl.play().catch((err) => {
+            console.error('audioService: Fallback play failed:', err);
+          }); 
+        } catch (e) {
+          console.error('audioService: Fallback error:', e);
+        }
       }
       // swap active after fade duration
       setTimeout(() => {
         try { audioEls[active].pause(); } catch {}
         active = next;
         currentIndex = index;
+        console.log('audioService: Crossfade complete, new active:', active, 'track:', currentIndex);
+        // Ensure the new active element has correct gain
+        if (gains[active]) {
+          gains[active].gain.value = volume;
+        }
         emit('trackchange', currentIndex);
-        if (!play) audioEls[active].pause();
+        // Only pause if we shouldn't be playing
+        if (!play && !audioEls[active].paused) {
+          console.log('audioService: Pausing after track change (play=false)');
+          audioEls[active].pause();
+        }
       }, fadeMs + 10);
     } else {
       // no WebAudio: immediate swap
-      try { audioEls[active].pause(); nextEl.play().catch(()=>{}); } catch {}
+      console.log('audioService: Immediate swap (no WebAudio)');
+      try { 
+        audioEls[active].pause(); 
+        if (play) {
+          nextEl.play().catch((err) => {
+            console.error('audioService: Immediate play failed:', err);
+          }); 
+        }
+      } catch (e) {
+        console.error('audioService: Immediate swap error:', e);
+      }
       active = next;
       currentIndex = index;
       emit('trackchange', currentIndex);
-      if (!play) audioEls[active].pause();
     }
   }
 
