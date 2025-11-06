@@ -266,7 +266,7 @@ export default function TimerPage() {
             onEnded={() => setIsPlaying(false)}
             loop
           >
-            <source src="/path-to-your-lofi-music.mp3" type="audio/mpeg" />
+            <source src="/Lofi.mp3" type="audio/mpeg" />
             Your browser does not support the audio element.
           </audio>
           
