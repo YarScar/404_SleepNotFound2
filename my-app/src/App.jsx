@@ -3,6 +3,7 @@ import HomePage from './Pages/HomePage';
 import TimerPage from './Pages/TimerPage';
 import TasksPage from './Pages/TasksPage';
 import ProfilePage from './Pages/ProfilePage';
+import HomeworkHelpPage from './Pages/HomeworkHelpPage';
 import Navigation from './components/Navigation';
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="/timer" element={<TimerPage />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/homework-help" element={<HomeworkHelpPage />} />
         </Routes>
         <Navigation />
       </div>
