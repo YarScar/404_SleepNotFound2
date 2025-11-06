@@ -59,49 +59,47 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="page timer-page" style={{ maxWidth: 700 }}>
-      <div className="hero-section hero">
-        <div className="hero-icon profile-icon" aria-hidden>
+    <div className="page tasks-page">
+      <div className="hero-section tasks-hero">
+        <div className="tasks-icon profile-icon" aria-hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M8 6h8M8 12h8M8 18h8" />
           </svg>
         </div>
-        <h1 className="app-title timer-title">Tasks</h1>
-        <p className="tagline timer-subtitle">Keep focused — same aesthetic across the app.</p>
+        <h1 className="app-title tasks-title">Tasks</h1>
+        <p className="tagline tasks-subtitle">Keep focused — same aesthetic across the app.</p>
       </div>
 
       <section className="recent-tasks">
         <h2 className="recent-tasks-title">My Tasks</h2>
 
-        <form onSubmit={addTask} style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12, alignItems: "stretch" }} aria-label="Add task form">
+        <form onSubmit={addTask} className="tasks-form" aria-label="Add task form">
           <input
-            className="timer-input"
-            style={{ fontSize: "1rem", width: "100%", borderBottom: "2px solid #333", background: "white", padding: "10px 12px", borderRadius: 8 }}
+            className="tasks-input"
             placeholder="Task"
             value={newSubject}
             onChange={e => setNewSubject(e.target.value)}
             aria-label="Task subject"
           />
           <input
-            className="timer-input"
-            style={{ fontSize: "0.95rem", width: "100%", borderBottom: "2px solid #E5E7EB", background: "white", padding: "10px 12px", borderRadius: 8 }}
+            className="tasks-input description"
             placeholder="Short description (optional)"
             value={newDescription}
             onChange={e => setNewDescription(e.target.value)}
             aria-label="Task description"
           />
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button type="submit" className="control-button pause-play-button" style={{ padding: "10px 16px" }} aria-label="Add task">
+          <div className="tasks-form-actions">
+            <button type="submit" className="tasks-add-button" aria-label="Add task">
               Add
             </button>
           </div>
         </form>
 
         <div className="tasks-list" aria-live="polite">
-          {tasks.length === 0 && <p style={{ color: "#666", textAlign: "center" }}>No tasks yet — add one above.</p>}
+          {tasks.length === 0 && <p className="tasks-empty-message">No tasks yet — add one above.</p>}
 
           {tasks.map(task => (
-            <div key={task.id} className="task-item" style={{ alignItems: "center" }}>
+            <div key={task.id} className="task-item">
               <div
                 className={`checkbox ${task.done ? "checked" : ""}`}
                 onClick={() => toggleDone(task.id)}
@@ -126,27 +124,27 @@ export default function TasksPage() {
                 {editingId === task.id ? (
                   <>
                     <input
+                      className="task-edit-input-subject"
                       value={editValues.subject}
                       onChange={e => setEditValues(ev => ({ ...ev, subject: e.target.value }))}
-                      style={{ fontSize: "1rem", fontWeight: 600, width: "100%", marginBottom: 6, padding: "6px 8px", border: "2px solid #3B82F6", borderRadius: 8 }}
                       aria-label="Edit task subject"
                     />
                     <input
+                      className="task-edit-input-description"
                       value={editValues.description}
                       onChange={e => setEditValues(ev => ({ ...ev, description: e.target.value }))}
-                      style={{ fontSize: "0.9rem", width: "100%", padding: "6px 8px", border: "1px solid #E5E7EB", borderRadius: 8 }}
                       aria-label="Edit task description"
                     />
                   </>
                 ) : (
                   <>
-                    <p className="task-subject" style={{ marginBottom: 6 }}>{task.subject}</p>
+                    <p className="task-subject">{task.subject}</p>
                     <p className={`task-description ${task.done ? "strikethrough" : ""}`}>{task.description || "No description"}</p>
                   </>
                 )}
               </div>
 
-              <div style={{ display: "flex", gap: 8, marginLeft: 12 }}>
+              <div className="task-actions">
                 {editingId === task.id ? (
                   <>
                     <button className="profile-save-btn" onClick={() => saveEdit(task.id)} aria-label="Save task">Save</button>
@@ -160,7 +158,7 @@ export default function TasksPage() {
                         <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
                       </svg>
                     </button>
-                    <button className="profile-action-btn danger" title="Delete" onClick={() => removeTask(task.id)} style={{ padding: "8px 10px" }} aria-label={`Delete ${task.subject}`}>
+                    <button className="profile-action-btn danger task-delete-button" title="Delete" onClick={() => removeTask(task.id)} aria-label={`Delete ${task.subject}`}>
                       Delete
                     </button>
                   </>
