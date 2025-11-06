@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import '../Styles/Pages.css';
 
 export default function TimerPage() {
@@ -10,6 +10,12 @@ export default function TimerPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [inputMinutes, setInputMinutes] = useState(String(defaultTimerMinutes).padStart(2, '0'));
   const [inputSeconds, setInputSeconds] = useState('00');
+  
+  // Music player states
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef(null);
 
   // Load default timer on component mount and when localStorage changes
   useEffect(() => {
@@ -90,6 +96,50 @@ export default function TimerPage() {
     }
   };
 
+  // Music player functions
+  const toggleMusic = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleProgressClick = (e) => {
+    if (audioRef.current) {
+      const progressBar = e.currentTarget;
+      const clickX = e.nativeEvent.offsetX;
+      const width = progressBar.offsetWidth;
+      const newTime = (clickX / width) * duration;
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
+  const formatTime = (time) => {
+    if (isNaN(time)) return '0:00';
+    const mins = Math.floor(time / 60);
+    const secs = Math.floor(time % 60);
+    return `${mins}:${String(secs).padStart(2, '0')}`;
+  };
+
+  const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+
   return (
     <div className="timer-page">
       <div className="timer-hero">
@@ -167,14 +217,49 @@ export default function TimerPage() {
         </div>
 
         <div className="music-info">
-          <p className="music-label">Type of Music Playing</p>
+          <audio 
+            ref={audioRef}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onEnded={() => setIsPlaying(false)}
+            loop
+          >
+            <source src="/path-to-your-lofi-music.mp3" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+          
+          <p className="music-label">Now Playing</p>
           <p className="song-title">Lofi Hip Hop - Chill Beats to Study/Relax</p>
-          <div className="progress-bar-container">
-            <div className="progress-bar" style={{ width: '35%' }}></div>
+          
+          <div className="music-controls">
+            <button 
+              className="music-play-button" 
+              onClick={toggleMusic}
+              title={isPlaying ? 'Pause music' : 'Play music'}
+            >
+              {isPlaying ? (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                  <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              )}
+            </button>
+          </div>
+          
+          <div 
+            className="progress-bar-container" 
+            onClick={handleProgressClick}
+            style={{ cursor: 'pointer' }}
+            title="Click to seek"
+          >
+            <div className="progress-bar" style={{ width: `${progressPercentage}%` }}></div>
           </div>
           <div className="progress-time">
-            <span>1:24</span>
-            <span>4:02</span>
+            <span>{formatTime(currentTime)}</span>
+            <span>{formatTime(duration)}</span>
           </div>
         </div>
       </div>
