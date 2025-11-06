@@ -15,6 +15,7 @@ export default function TimerPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [songName, setSongName] = useState('Lofi Hip Hop - Chill Beats to Study/Relax');
   const audioRef = useRef(null);
 
   // Load default timer on component mount and when localStorage changes
@@ -102,7 +103,9 @@ export default function TimerPage() {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
-        audioRef.current.play();
+        audioRef.current.play().catch(err => {
+          console.error('Error playing audio:', err);
+        });
       }
       setIsPlaying(!isPlaying);
     }
@@ -114,9 +117,44 @@ export default function TimerPage() {
     }
   };
 
+  const handleCanPlayThrough = () => {
+    // Audio is fully buffered and can play through
+    console.log('Audio can play through');
+  };
+
+  const handleWaiting = () => {
+    // Audio is buffering
+    console.log('Audio is buffering...');
+  };
+
+  const handleStalled = () => {
+    // Attempt to recover from stalled state
+    if (audioRef.current && isPlaying) {
+      const currentPos = audioRef.current.currentTime;
+      audioRef.current.load();
+      audioRef.current.currentTime = currentPos;
+      audioRef.current.play().catch(err => {
+        console.error('Error recovering from stall:', err);
+      });
+    }
+  };
+
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
+      // Extract song name from the audio source
+      const src = audioRef.current.currentSrc || audioRef.current.src;
+      if (src) {
+        const fileName = src.split('/').pop().split('\\').pop();
+        const nameWithoutExtension = fileName.replace(/\.(mp3|wav|ogg|m4a)$/i, '');
+        // Format the name: replace hyphens and underscores with spaces, capitalize words
+        const formattedName = nameWithoutExtension
+          .replace(/[-_]/g, ' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+        setSongName(formattedName || 'Lofi Hip Hop - Chill Beats to Study/Relax');
+      }
     }
   };
 
@@ -219,8 +257,12 @@ export default function TimerPage() {
         <div className="music-info">
           <audio 
             ref={audioRef}
+            preload="auto"
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
+            onCanPlayThrough={handleCanPlayThrough}
+            onWaiting={handleWaiting}
+            onStalled={handleStalled}
             onEnded={() => setIsPlaying(false)}
             loop
           >
@@ -229,7 +271,7 @@ export default function TimerPage() {
           </audio>
           
           <p className="music-label">Now Playing</p>
-          <p className="song-title">Lofi Hip Hop - Chill Beats to Study/Relax</p>
+          <p className="song-title" title={songName}>{songName}</p>
           
           <div className="music-controls">
             <button 
