@@ -15,16 +15,19 @@ export default function TimerPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [songName, setSongName] = useState('No song loaded');
   // Add your music files to the public folder and list them here
   // The name will be formatted automatically, or you can customize it
   const [playlist] = useState([
-    { id: 1, name: 'Lofi Chill Beats', url: '/Lofi.mp3' },
+    { id: 1, name: 'Honey Jam', url: '/Lofi.mp3' },
+    { id: 2, name: 'Peach Prosecco', url: '/Lofi1.mp3' },
+    { id: 3, name: 'Aromatic', url: '/Lofi2.mp3' },
+    { id: 4, name: 'Noon', url: '/Lofi3.mp3' },
     // Add more tracks here as you add them to the public folder:
     // { id: 2, name: 'Your Track Name', url: '/yourfile.mp3' },
     // { id: 3, name: 'Another Track', url: '/anotherfile.mp3' }
   ]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [songName, setSongName] = useState(playlist[0]?.name || 'No song loaded');
   const [loopPlaylist, setLoopPlaylist] = useState(true);
   const audioRef = useRef(null);
 
@@ -34,6 +37,14 @@ export default function TimerPage() {
     if (!isRunning && minutes === defaultTimerMinutes && seconds === 0) {
       setMinutes(savedTimer);
       setInputMinutes(String(savedTimer).padStart(2, '0'));
+    }
+  }, []);
+
+  // Load first track on component mount
+  useEffect(() => {
+    if (playlist.length > 0 && audioRef.current) {
+      audioRef.current.src = playlist[0].url;
+      setSongName(playlist[0].name);
     }
   }, []);
 
@@ -152,19 +163,6 @@ export default function TimerPage() {
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
-      // Extract song name from the audio source
-      const src = audioRef.current.currentSrc || audioRef.current.src;
-      if (src) {
-        const fileName = src.split('/').pop().split('\\').pop();
-        const nameWithoutExtension = fileName.replace(/\.(mp3|wav|ogg|m4a)$/i, '');
-        // Format the name: replace hyphens and underscores with spaces, capitalize words
-        const formattedName = nameWithoutExtension
-          .replace(/[-_]/g, ' ')
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-          .join(' ');
-        setSongName(formattedName || 'Lofi Hip Hop - Chill Beats to Study/Relax');
-      }
     }
   };
 
