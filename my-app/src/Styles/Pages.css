@@ -4,6 +4,405 @@
   padding: 20px;
 }
 
+/* Home Page Styles */
+.home-page {
+  max-width: 450px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 100px;
+  background: linear-gradient(to bottom, #F5F0E8, #E8DCC8);
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Hero Section */
+.hero-section {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.profile-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 15px;
+  background-color: white;
+  border: 3px solid #F97316;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F97316;
+}
+
+.profile-icon svg {
+  width: 50px;
+  height: 50px;
+}
+
+.app-title {
+  font-family: 'Brush Script MT', cursive, 'Comic Sans MS', cursive;
+  font-size: 2.5rem;
+  margin: 10px 0;
+  color: #333;
+  font-weight: normal;
+}
+
+.tagline {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 10px 0 20px;
+  font-weight: 300;
+}
+
+.points-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 8px 20px;
+  border: 2px solid #333;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.points-icon {
+  color: #10B981;
+  font-weight: bold;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.dashboard-card {
+  background: white;
+  border: 2px solid #333;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0 0 5px 0;
+}
+
+.card-title {
+  font-size: 1rem;
+  color: #333;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Recent Tasks Section */
+.recent-tasks {
+  background: white;
+  border: 2px solid #333;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 80px;
+}
+
+.recent-tasks-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px;
+  border-radius: 15px;
+  border: 2px solid #333;
+  transition: transform 0.2s;
+}
+
+.task-item:hover {
+  transform: translateX(5px);
+}
+
+.task-checkbox {
+  flex-shrink: 0;
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #333;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  cursor: pointer;
+}
+
+.checkbox.checked {
+  background: #10B981;
+  border-color: #10B981;
+  color: white;
+}
+
+.task-content {
+  flex: 1;
+  text-align: left;
+}
+
+.task-subject {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: #333;
+}
+
+.task-description {
+  font-size: 0.9rem;
+  margin: 0;
+  color: #555;
+}
+
+.task-description.strikethrough {
+  text-decoration: line-through;
+  color: #999;
+}
+
+/* Navigation Bar */
+.navigation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 2px solid #333;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 15px 20px;
+  z-index: 1000;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.navigation a {
+  color: #666;
+  text-decoration: none;
+  padding: 10px;
+  border-radius: 50%;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navigation a:hover {
+  background-color: #F5F0E8;
+}
+
+.navigation a.active {
+  color: #333;
+  background-color: #F5F0E8;
+}
+
+.navigation svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Timer Page Styles */
+.timer-page {
+  max-width: 450px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 100px;
+  background: linear-gradient(to bottom, #F5E6E8, #E8D4D8);
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+}
+
+.timer-hero {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.timer-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #60A5FA;
+}
+
+.timer-icon svg {
+  width: 70px;
+  height: 70px;
+  stroke-width: 2.5;
+}
+
+.timer-title {
+  font-family: 'Brush Script MT', cursive, 'Comic Sans MS', cursive;
+  font-size: 2.2rem;
+  margin: 10px 0;
+  color: #333;
+  font-weight: normal;
+}
+
+.timer-subtitle {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 10px 0;
+  font-weight: 300;
+}
+
+.timer-display-container {
+  background: white;
+  border: 2px solid #333;
+  border-radius: 25px;
+  padding: 30px 25px;
+  margin-bottom: 20px;
+}
+
+.timer-display {
+  font-size: 4rem;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+  margin-bottom: 25px;
+  letter-spacing: 2px;
+}
+
+.timer-clickable {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.timer-clickable:hover {
+  color: #7C3AED;
+}
+
+.timer-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.timer-input {
+  font-size: 4rem;
+  font-weight: bold;
+  width: 2.2ch;
+  text-align: center;
+  border: none;
+  background: transparent;
+  color: #333;
+  outline: none;
+  border-bottom: 3px solid #7C3AED;
+  padding: 0;
+  font-family: inherit;
+}
+
+.timer-input:focus {
+  border-bottom-color: #A78BFA;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.control-button {
+  padding: 12px 28px;
+  border: 2px solid #333;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.pause-play-button {
+  background: #A78BFA;
+  color: white;
+}
+
+.pause-play-button:hover {
+  background: #9333EA;
+}
+
+.refresh-button {
+  background: #9CA3AF;
+  color: white;
+}
+
+.refresh-button:hover {
+  background: #6B7280;
+}
+
+.music-info {
+  background: #E9D5FF;
+  border: 2px solid #333;
+  border-radius: 15px;
+  padding: 15px;
+  text-align: center;
+}
+
+.music-label {
+  font-size: 0.85rem;
+  color: #333;
+  margin: 0 0 8px 0;
+  font-weight: 500;
+}
+
+.song-title {
+  font-size: 0.95rem;
+  color: #333;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #C4B5FD;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #7C3AED;
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+
+.progress-time {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #666;
+}
+
 .hero {
   text-align: center;
   margin-bottom: 50px;

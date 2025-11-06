@@ -1,8 +1,159 @@
+import { useState, useEffect } from 'react';
+import '../Styles/Pages.css';
+
 export default function TimerPage() {
+  const [minutes, setMinutes] = useState(25);
+  const [seconds, setSeconds] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputMinutes, setInputMinutes] = useState('25');
+  const [inputSeconds, setInputSeconds] = useState('00');
+
+  useEffect(() => {
+    let interval;
+    if (isRunning && (minutes > 0 || seconds > 0)) {
+      interval = setInterval(() => {
+        if (seconds === 0) {
+          if (minutes === 0) {
+            setIsRunning(false);
+          } else {
+            setMinutes(minutes - 1);
+            setSeconds(59);
+          }
+        } else {
+          setSeconds(seconds - 1);
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning, minutes, seconds]);
+
+  const handlePausePlay = () => {
+    setIsRunning(!isRunning);
+  };
+
+  const handleRefresh = () => {
+    setIsRunning(false);
+    setMinutes(25);
+    setSeconds(0);
+    setInputMinutes('25');
+    setInputSeconds('00');
+  };
+
+  const handleTimerClick = () => {
+    if (!isRunning) {
+      setIsEditing(true);
+      setInputMinutes(String(minutes).padStart(2, '0'));
+      setInputSeconds(String(seconds).padStart(2, '0'));
+    }
+  };
+
+  const handleMinutesChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '');
+    if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 99)) {
+      setInputMinutes(value);
+    }
+  };
+
+  const handleSecondsChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '');
+    if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 59)) {
+      setInputSeconds(value);
+    }
+  };
+
+  const handleBlur = () => {
+    const mins = inputMinutes === '' ? 0 : parseInt(inputMinutes);
+    const secs = inputSeconds === '' ? 0 : parseInt(inputSeconds);
+    setMinutes(mins);
+    setSeconds(secs);
+    setInputMinutes(String(mins).padStart(2, '0'));
+    setInputSeconds(String(secs).padStart(2, '0'));
+    setIsEditing(false);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleBlur();
+    }
+  };
+
   return (
-    <div className="text-center mt-20">
-      <h1 className="text-3xl font-bold">Focus Timer</h1>
-      <p className="text-gray-600">Stay focused with calming music and a timer.</p>
+    <div className="timer-page">
+      <div className="timer-hero">
+        <div className="timer-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        </div>
+        <h1 className="timer-title">Focus Timer</h1>
+        <p className="timer-subtitle">Stay focused with calming lofi beats</p>
+      </div>
+
+      <div className="timer-display-container">
+        <div 
+          className={`timer-display ${!isRunning ? 'timer-clickable' : ''}`} 
+          onClick={handleTimerClick}
+          title={!isRunning ? 'Click to set time' : ''}
+        >
+          {isEditing ? (
+            <div className="timer-edit">
+              <input
+                type="text"
+                className="timer-input"
+                value={inputMinutes}
+                onChange={handleMinutesChange}
+                onBlur={handleBlur}
+                onKeyPress={handleKeyPress}
+                maxLength={2}
+                autoFocus
+              />
+              <span>:</span>
+              <input
+                type="text"
+                className="timer-input"
+                value={inputSeconds}
+                onChange={handleSecondsChange}
+                onBlur={handleBlur}
+                onKeyPress={handleKeyPress}
+                maxLength={2}
+              />
+            </div>
+          ) : (
+            <>
+              {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            </>
+          )}
+        </div>
+        
+        <div className="timer-controls">
+          <button 
+            className="control-button pause-play-button" 
+            onClick={handlePausePlay}
+          >
+            {isRunning ? 'Pause' : 'Pause/Play'}
+          </button>
+          <button 
+            className="control-button refresh-button" 
+            onClick={handleRefresh}
+          >
+            Refresh
+          </button>
+        </div>
+
+        <div className="music-info">
+          <p className="music-label">Type of Music Playing</p>
+          <p className="song-title">Lofi Hip Hop - Chill Beats to Study/Relax</p>
+          <div className="progress-bar-container">
+            <div className="progress-bar" style={{ width: '35%' }}></div>
+          </div>
+          <div className="progress-time">
+            <span>1:24</span>
+            <span>4:02</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
