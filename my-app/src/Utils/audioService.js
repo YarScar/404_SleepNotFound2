@@ -42,10 +42,16 @@ const audioService = (() => {
       ctx = null;
     }
 
-    // forward element events
+    // forward element events (only from active element)
     audioEls.forEach((el, i) => {
       ['timeupdate','loadedmetadata','canplaythrough','waiting','stalled','ended','error'].forEach(name => {
-        el.addEventListener(name, (ev) => emit(name, ev));
+        el.addEventListener(name, (ev) => {
+          // Only emit events from the currently active element
+          // (except error which we want to know about from any element)
+          if (i === active || name === 'error') {
+            emit(name, ev);
+          }
+        });
       });
     });
 
@@ -151,20 +157,26 @@ const audioService = (() => {
 
     // If we have WebAudio, perform crossfade
     if (ctx && gains[active] && gains[next]) {
-      const now = ctx.currentTime;
+      const fadeStart = ctx.currentTime;
       const fadeSec = Math.max(0, fadeMs / 1000);
+      
       try {
-        gains[next].gain.cancelScheduledValues(now);
-        gains[active].gain.cancelScheduledValues(now);
-        gains[next].gain.setValueAtTime(0.0001, now);
+        gains[next].gain.cancelScheduledValues(fadeStart);
+        gains[active].gain.cancelScheduledValues(fadeStart);
+        gains[next].gain.setValueAtTime(0.0001, fadeStart);
         // ensure next element plays so its buffer decodes
-        console.log('audioService: Starting crossfade, playing next element');
-        nextEl.play().catch((err) => {
-          console.error('audioService: Failed to play during crossfade:', err);
-        });
-        gains[next].gain.linearRampToValueAtTime(volume, now + fadeSec); // Use volume variable
-        gains[active].gain.setValueAtTime(gains[active].gain.value || volume, now);
-        gains[active].gain.linearRampToValueAtTime(0.0001, now + fadeSec);
+        console.log('audioService: Starting crossfade, playing next element', next, 'with play flag:', play);
+        const playPromise = nextEl.play();
+        if (playPromise) {
+          playPromise.then(() => {
+            console.log('audioService: Next element started playing successfully');
+          }).catch((err) => {
+            console.error('audioService: Failed to play during crossfade:', err);
+          });
+        }
+        gains[next].gain.linearRampToValueAtTime(volume, fadeStart + fadeSec);
+        gains[active].gain.setValueAtTime(gains[active].gain.value || volume, fadeStart);
+        gains[active].gain.linearRampToValueAtTime(0.0001, fadeStart + fadeSec);
       } catch (err) {
         console.warn('audioService crossfade failed', err);
         // fallback to immediate switch
@@ -177,15 +189,24 @@ const audioService = (() => {
           console.error('audioService: Fallback error:', e);
         }
       }
+      
       // swap active after fade duration
       setTimeout(() => {
         try { audioEls[active].pause(); } catch {}
+        const oldActive = active;
         active = next;
         currentIndex = index;
-        console.log('audioService: Crossfade complete, new active:', active, 'track:', currentIndex);
-        // Ensure the new active element has correct gain
+        console.log('audioService: Crossfade complete, switched from', oldActive, 'to', active, 'track:', currentIndex, 'play:', play, 'paused:', audioEls[active].paused);
+        // Ensure the new active element has correct gain (force it to volume level)
         if (gains[active]) {
-          gains[active].gain.value = volume;
+          try {
+            gains[active].gain.cancelScheduledValues(ctx.currentTime);
+            gains[active].gain.setValueAtTime(volume, ctx.currentTime);
+            console.log('audioService: Set gain to', volume, 'for active element', active);
+          } catch (e) {
+            console.error('audioService: Failed to set gain:', e);
+            gains[active].gain.value = volume;
+          }
         }
         emit('trackchange', currentIndex);
         // Emit metadata for the new track
@@ -193,10 +214,35 @@ const audioService = (() => {
         if (newEl.duration && !isNaN(newEl.duration)) {
           emit('loadedmetadata', { target: newEl });
         }
-        // Only pause if we shouldn't be playing
-        if (!play && !audioEls[active].paused) {
-          console.log('audioService: Pausing after track change (play=false)');
-          audioEls[active].pause();
+        // Ensure playing state is correct
+        if (play) {
+          if (audioEls[active].paused) {
+            console.log('audioService: Track is paused but should be playing, starting playback');
+            audioEls[active].play().catch((err) => {
+              console.error('audioService: Failed to resume after crossfade:', err);
+            });
+          } else {
+            console.log('audioService: Track is already playing, continuing');
+          }
+        } else {
+          if (!audioEls[active].paused) {
+            console.log('audioService: Pausing after track change (play=false)');
+            audioEls[active].pause();
+          }
+        }
+        
+        // Double-check after a brief delay to ensure playback started
+        if (play) {
+          setTimeout(() => {
+            if (audioEls[active].paused) {
+              console.warn('audioService: Track still paused after delay, forcing play');
+              audioEls[active].play().catch((err) => {
+                console.error('audioService: Failed to force play:', err);
+              });
+            } else {
+              console.log('audioService: Verified track is playing');
+            }
+          }, 50);
         }
       }, fadeMs + 10);
     } else {
