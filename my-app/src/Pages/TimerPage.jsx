@@ -15,7 +15,17 @@ export default function TimerPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [songName, setSongName] = useState('Lofi Hip Hop - Chill Beats to Study/Relax');
+  const [songName, setSongName] = useState('No song loaded');
+  // Add your music files to the public folder and list them here
+  // The name will be formatted automatically, or you can customize it
+  const [playlist] = useState([
+    { id: 1, name: 'Lofi Chill Beats', url: '/Lofi.mp3' },
+    // Add more tracks here as you add them to the public folder:
+    // { id: 2, name: 'Your Track Name', url: '/yourfile.mp3' },
+    // { id: 3, name: 'Another Track', url: '/anotherfile.mp3' }
+  ]);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [loopPlaylist, setLoopPlaylist] = useState(true);
   const audioRef = useRef(null);
 
   // Load default timer on component mount and when localStorage changes
@@ -176,6 +186,69 @@ export default function TimerPage() {
     return `${mins}:${String(secs).padStart(2, '0')}`;
   };
 
+  // Playlist functions
+  const loadTrack = (index) => {
+    if (playlist[index] && audioRef.current) {
+      audioRef.current.src = playlist[index].url;
+      setSongName(playlist[index].name);
+      setCurrentTrackIndex(index);
+      setCurrentTime(0);
+      if (isPlaying) {
+        audioRef.current.play().catch(err => {
+          console.error('Error playing audio:', err);
+        });
+      }
+    }
+  };
+
+  const playNext = () => {
+    if (playlist.length > 0) {
+      const nextIndex = (currentTrackIndex + 1) % playlist.length;
+      loadTrack(nextIndex);
+      setIsPlaying(true);
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.play().catch(err => {
+            console.error('Error playing next track:', err);
+          });
+        }
+      }, 100);
+    }
+  };
+
+  const playPrevious = () => {
+    if (playlist.length > 0) {
+      const prevIndex = currentTrackIndex === 0 ? playlist.length - 1 : currentTrackIndex - 1;
+      loadTrack(prevIndex);
+      if (isPlaying) {
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.play().catch(err => {
+              console.error('Error playing previous track:', err);
+            });
+          }
+        }, 100);
+      }
+    }
+  };
+
+  const handleTrackEnd = () => {
+    // When a track ends
+    if (playlist.length > 0) {
+      const isLastTrack = currentTrackIndex === playlist.length - 1;
+      
+      if (loopPlaylist || !isLastTrack) {
+        // Play next track if loop is on OR if it's not the last track
+        playNext();
+      } else {
+        // Stop playing if loop is off and we're at the last track
+        setIsPlaying(false);
+      }
+    } else {
+      setIsPlaying(false);
+    }
+  };
+
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
@@ -263,27 +336,35 @@ export default function TimerPage() {
             onCanPlayThrough={handleCanPlayThrough}
             onWaiting={handleWaiting}
             onStalled={handleStalled}
-            onEnded={() => {
-              // restart playback and keep UI in playing state
-              if (audioRef.current) {
-                audioRef.current.currentTime = 0;
-                audioRef.current.play().catch(err => console.error('Error replaying audio:', err));
-                setIsPlaying(true);
-              }
-            }}
-            loop
+            onEnded={handleTrackEnd}
           >
-            <source src="/Lofi.mp3" type="audio/mpeg" />
             Your browser does not support the audio element.
           </audio>
           
           <p className="music-label">Now Playing</p>
           <p className="song-title" title={songName}>{songName}</p>
+          <p className="playlist-info">
+            {playlist.length > 0 
+              ? `Track ${currentTrackIndex + 1} of ${playlist.length}` 
+              : 'No playlist'}
+          </p>
           
           <div className="music-controls">
             <button 
+              className="music-nav-button" 
+              onClick={playPrevious}
+              disabled={playlist.length === 0}
+              title="Previous track"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+              </svg>
+            </button>
+            
+            <button 
               className="music-play-button" 
               onClick={toggleMusic}
+              disabled={playlist.length === 0}
               title={isPlaying ? 'Pause music' : 'Play music'}
             >
               {isPlaying ? (
@@ -295,6 +376,27 @@ export default function TimerPage() {
                   <path d="M8 5v14l11-7z"/>
                 </svg>
               )}
+            </button>
+            
+            <button 
+              className="music-nav-button" 
+              onClick={playNext}
+              disabled={playlist.length === 0}
+              title="Next track"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M6 18l8.5-6L6 6v12zm10-12v12h2V6h-2z"/>
+              </svg>
+            </button>
+            
+            <button 
+              className={`music-loop-button ${loopPlaylist ? 'active' : ''}`}
+              onClick={() => setLoopPlaylist(!loopPlaylist)}
+              title={loopPlaylist ? 'Loop: On' : 'Loop: Off'}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+              </svg>
             </button>
           </div>
           
@@ -310,6 +412,33 @@ export default function TimerPage() {
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
+          
+          {playlist.length > 0 && (
+            <div className="playlist-container">
+              <h3 className="playlist-header">Playlist</h3>
+              <div className="playlist-tracks">
+                {playlist.map((track, index) => (
+                  <div 
+                    key={track.id} 
+                    className={`playlist-track ${index === currentTrackIndex ? 'active' : ''}`}
+                    onClick={() => {
+                      loadTrack(index);
+                      if (isPlaying) {
+                        setTimeout(() => {
+                          audioRef.current?.play();
+                        }, 100);
+                      }
+                    }}
+                  >
+                    <div className="playlist-track-info">
+                      <span className="playlist-track-number">{index + 1}.</span>
+                      <span className="playlist-track-name">{track.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
