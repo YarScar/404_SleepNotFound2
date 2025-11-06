@@ -119,9 +119,9 @@ export default function TasksPage() {
         <h2 className="recent-tasks-title">My Tasks</h2>
 
         {/* Priority filter tabs */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12, justifyContent: 'center' }}>
+        <div className="tasks-filter">
           {['All','Today','High','Medium','Low'].map(p => (
-            <button key={p} onClick={() => setFilter(p)} className={`control-button ${filter === p ? 'pause-play-button' : ''}`} style={{ padding: '6px 10px', borderRadius: 20 }} aria-pressed={filter===p}>{p}</button>
+            <button key={p} onClick={() => setFilter(p)} className={`control-button ${filter === p ? 'pause-play-button' : ''}`} aria-pressed={filter===p}>{p}</button>
           ))}
         </div>
 
@@ -142,14 +142,14 @@ export default function TasksPage() {
             aria-label="Task description"
           />
 
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6 }}>
-            <select value={newPriority} onChange={e => setNewPriority(e.target.value)} aria-label="Priority" style={{ padding: '8px 10px', borderRadius: 8, border: '2px solid #333' }}>
+          <div className="tasks-form-row">
+            <select className="tasks-priority-select" value={newPriority} onChange={e => setNewPriority(e.target.value)} aria-label="Priority">
               <option>High</option>
               <option>Medium</option>
               <option>Low</option>
             </select>
-            <input type="date" value={newDueDate} onChange={e => setNewDueDate(e.target.value)} aria-label="Due date" style={{ padding: '8px 10px', borderRadius: 8, border: '2px solid #333' }} />
-            <div className="tasks-form-actions" style={{ marginLeft: 'auto' }}>
+            <input className="tasks-date-input" type="date" value={newDueDate} onChange={e => setNewDueDate(e.target.value)} aria-label="Due date" />
+            <div className="tasks-form-actions">
               <button type="submit" className="tasks-add-button" aria-label="Add task">Add</button>
             </div>
           </div>
@@ -195,40 +195,39 @@ export default function TasksPage() {
                       onChange={e => setEditValues(ev => ({ ...ev, description: e.target.value }))}
                       aria-label="Edit task description"
                     />
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                      <select value={task.priority || 'Medium'} onChange={e => updateTask(task.id, { priority: e.target.value })} aria-label="Priority">
+                    <div className="task-edit-row">
+                      <select className="tasks-priority-select" value={task.priority || 'Medium'} onChange={e => updateTask(task.id, { priority: e.target.value })} aria-label="Priority">
                         <option>High</option>
                         <option>Medium</option>
                         <option>Low</option>
                       </select>
-                      <input type="date" value={task.dueDate || ''} onChange={e => updateTask(task.id, { dueDate: e.target.value || null })} aria-label="Due date" />
+                      <input className="tasks-date-input" type="date" value={task.dueDate || ''} onChange={e => updateTask(task.id, { dueDate: e.target.value || null })} aria-label="Due date" />
                     </div>
                   </>
                 ) : (
                   <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="task-header">
                       <p className="task-subject">{task.subject}</p>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <span style={{ fontSize: 12, padding: '6px 8px', borderRadius: 12, border: '2px solid #333' }}>{task.priority || 'Medium'}</span>
-                        <input type="date" value={task.dueDate || ''} onChange={e => updateTask(task.id, { dueDate: e.target.value || null })} style={{ border: 'none', background: 'transparent' }} aria-label="Due date" />
+                      <div className="task-meta">
+                        <span className="task-priority-badge">{task.priority || 'Medium'}</span>
+                        <input className="task-due-input" type="date" value={task.dueDate || ''} onChange={e => updateTask(task.id, { dueDate: e.target.value || null })} aria-label="Due date" />
                       </div>
                     </div>
 
                     <p className={`task-description ${task.done ? "strikethrough" : ""}`}>{task.description || "No description"}</p>
 
-                    <div style={{ marginTop: 8 }}>
+                    <div className="subtasks">
                       {(task.subtasks || []).map(s => (
-                        <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <div key={s.id} className="subtask-item">
                           <div
                             className={`checkbox ${s.done ? 'checked' : ''}`}
                             onClick={() => toggleSubtask(task.id, s.id)}
                             role="button"
                             tabIndex={0}
-                            style={{ width: 20, height: 20 }}
                           >
                             {s.done ? '✓' : ''}
                           </div>
-                          <div style={{ fontSize: 14, color: s.done ? '#999' : '#333', textDecoration: s.done ? 'line-through' : 'none' }}>{s.text}</div>
+                          <div className={`subtask-text ${s.done ? 'done' : ''}`}>{s.text}</div>
                         </div>
                       ))}
 
@@ -269,9 +268,9 @@ export default function TasksPage() {
 function SubtaskAdder({ onAdd }) {
   const [text, setText] = useState('');
   return (
-    <form onSubmit={(e) => { e.preventDefault(); if (!text.trim()) return; onAdd(text.trim()); setText(''); }} style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-      <input value={text} onChange={e => setText(e.target.value)} placeholder="Add subtask" style={{ flex: 1, padding: '6px 8px', borderRadius: 8, border: '1px solid #E5E7EB' }} />
-      <button type="submit" className="tasks-add-button" style={{ padding: '6px 10px' }}>Add</button>
+    <form onSubmit={(e) => { e.preventDefault(); if (!text.trim()) return; onAdd(text.trim()); setText(''); }} className="subtask-form">
+      <input value={text} onChange={e => setText(e.target.value)} placeholder="Add subtask" className="subtask-input" />
+      <button type="submit" className="tasks-add-button">Add</button>
     </form>
   );
 }
