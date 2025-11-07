@@ -1,4 +1,4 @@
-// HomePage.jsx
+// HomePage.jsx - Main dashboard showing tasks overview and stats
 import React, { useState, useEffect } from 'react';
 import DashboardCard from '../components/DashboardCard'; 
 import CloudDecoration from '../components/CloudDecoration';
@@ -7,12 +7,14 @@ import '../Styles/Pages.css';
 const najahLogo = '/najah-logo.png';
     
 export default function HomePage() {
+  // Sample tasks to show if localStorage is empty
   const sampleTasks = [
     { id: 1, subject: 'Mathematics', description: 'Complete calculus hw', color: '#FFF4B8', done: false, dueDate: null, priority: 'Medium', subtasks: [] },
     { id: 2, subject: 'EL4', description: 'Write 5 paragraphs to essay', color: '#FFD4D4', done: false, dueDate: null, priority: 'High', subtasks: [] },
     { id: 3, subject: 'Art', description: 'Work on painting for 1 hour', color: '#E4C4F4', done: true, dueDate: null, priority: 'Low', subtasks: [ { id: 1, text: 'Gather brushes', done: true }, { id: 2, text: 'Sketch idea', done: false } ] }
   ];
 
+  // Load tasks from localStorage or use sample tasks
   const [recentTasks, setRecentTasks] = useState(() => {
     try {
       const raw = localStorage.getItem('tasks_v1');
@@ -36,22 +38,27 @@ export default function HomePage() {
     }
   });
 
+  // Filter state for task filtering
   const [filter, setFilter] = useState('All');
 
+  // Save tasks to localStorage whenever they change
   useEffect(() => {
     try {
       localStorage.setItem('tasks_v1', JSON.stringify(recentTasks));
     } catch {}
   }, [recentTasks]);
 
+  // Toggle task completion status
   function toggleCompleted(id) {
     setRecentTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
   }
 
   // No inline editing on homepage — updates are handled in TasksPage
 
+  // Get today's date in ISO format for filtering
   const todayISO = new Date().toISOString().slice(0,10);
 
+  // Check if task matches current filter
   function matchesFilter(t) {
     if (filter === 'All') return true;
     if (filter === 'Today') return t.dueDate === todayISO;

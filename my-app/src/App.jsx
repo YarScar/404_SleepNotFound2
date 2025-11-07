@@ -1,3 +1,4 @@
+// Main App component - sets up routing and global components
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './Pages/HomePage';
 import TimerPage from './Pages/TimerPage';
@@ -11,6 +12,7 @@ export default function App() {
   return (
     <Router>
       <div className="app-container">
+        {/* Define all routes for the app */}
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/timer" element={<TimerPage />} />
@@ -20,6 +22,7 @@ export default function App() {
           {/* Catch-all route for SPA - redirect to home if route not found */}
           <Route path="*" element={<HomePage />} />
         </Routes>
+        {/* Global components available on all pages */}
         <VolumeControl />
         <Navigation />
       </div>

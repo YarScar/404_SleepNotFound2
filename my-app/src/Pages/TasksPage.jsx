@@ -1,13 +1,16 @@
+// TasksPage - Full task management with create, edit, delete, and subtasks
 import React, { useState, useEffect } from "react";
 import "../Styles/Pages.css";
 
 
 export default function TasksPage() {
+  // Load tasks from localStorage on mount
   const [tasks, setTasks] = useState(() => {
     try {
       const raw = localStorage.getItem("tasks_v1");
       if (!raw) return [];
       const parsed = JSON.parse(raw);
+      // Normalize task data structure
       return parsed.map((t, i) => ({
         id: t.id ?? Date.now() + i,
         subject: t.subject ?? t.title ?? "Untitled",
@@ -22,16 +25,18 @@ export default function TasksPage() {
     }
   });
 
-
+  // Form state for adding new tasks
   const [newSubject, setNewSubject] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newPriority, setNewPriority] = useState("Medium");
   const [newDueDate, setNewDueDate] = useState("");
+  // Edit state
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({ subject: "", description: "" });
+  // Filter state
   const [filter, setFilter] = useState("All");
 
-  // Save tasks to local storage
+  // Save tasks to local storage whenever they change
   useEffect(() => {
     try {
       localStorage.setItem("tasks_v1", JSON.stringify(tasks));
@@ -40,7 +45,7 @@ export default function TasksPage() {
     }
   }, [tasks]);
 
-
+  // Toggle task completion
   function toggleDone(id) {
     setTasks(prev => prev.map(t => (t.id === id ? { ...t, done: !t.done } : t)));
   }
@@ -49,7 +54,7 @@ export default function TasksPage() {
   function addTask(e) {
     e.preventDefault();
     const subject = newSubject.trim();
-    if (!subject) return;
+    if (!subject) return; // Don't add empty tasks
     const next = {
       id: Date.now(),
       subject,
@@ -59,7 +64,8 @@ export default function TasksPage() {
       dueDate: newDueDate || null,
       subtasks: [],
     };
-    setTasks(prev => [next, ...prev]);
+    setTasks(prev => [next, ...prev]); // Add to beginning of list
+    // Reset form
     setNewSubject("");
     setNewDescription("");
     setNewPriority("Medium");
@@ -71,23 +77,25 @@ export default function TasksPage() {
     setTasks(prev => prev.filter(t => t.id !== id));
   }
 
-
+  // Start editing a task
   function startEdit(task) {
     setEditingId(task.id);
     setEditValues({ subject: task.subject, description: task.description || "" });
   }
 
+  // Save edited task
   function saveEdit(id) {
     setTasks(prev => prev.map(t => (t.id === id ? { ...t, subject: editValues.subject.trim() || t.subject, description: editValues.description } : t)));
     setEditingId(null);
     setEditValues({ subject: "", description: "" });
   }
 
+  // Update task properties (priority, due date, etc.)
   function updateTask(id, patch) {
     setTasks(prev => prev.map(t => (t.id === id ? { ...t, ...patch } : t)));
   }
 
-  // Subtasks
+  // Subtasks functions
   function addSubtask(taskId, text) {
     if (!text) return;
     setTasks(prev => prev.map(t => {
@@ -97,6 +105,7 @@ export default function TasksPage() {
     }));
   }
 
+  // Toggle subtask completion
   function toggleSubtask(taskId, subId) {
     setTasks(prev => prev.map(t => {
       if (t.id !== taskId) return t;
@@ -104,9 +113,10 @@ export default function TasksPage() {
     }));
   }
 
-
+  // Get today's date for filtering
   const todayISO = new Date().toISOString().slice(0,10);
-// Filter tasks
+  
+  // Filter tasks based on selected filter
   function matchesFilter(t) {
     if (filter === 'All') return true;
     if (filter === 'Today') return t.dueDate === todayISO;
@@ -301,7 +311,7 @@ export default function TasksPage() {
   );
 }
 
-// SubtaskAdder component
+// SubtaskAdder component - inline form to add subtasks
 function SubtaskAdder({ onAdd }) {
   const [text, setText] = useState('');
   return (
@@ -310,7 +320,7 @@ function SubtaskAdder({ onAdd }) {
         e.preventDefault();
         if (!text.trim()) return;
         onAdd(text.trim());
-        setText('');
+        setText(''); // Clear input after adding
       }}
       className="subtask-form"
     >

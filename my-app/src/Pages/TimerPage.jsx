@@ -1,14 +1,18 @@
+// TimerPage - Pomodoro timer with integrated music player
 import { useState, useEffect, useRef } from 'react';
 import '../Styles/Pages.css';
 import audioService from '../Utils/audioService';
 
 export default function TimerPage() {
+  // Load saved timer preference or default to 25 minutes
   const defaultTimerMinutes = parseInt(localStorage.getItem('najahDefaultTimer')) || 25;
   
+  // Timer state
   const [minutes, setMinutes] = useState(defaultTimerMinutes);
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  // Input state for editing timer
   const [inputMinutes, setInputMinutes] = useState(String(defaultTimerMinutes).padStart(2, '0'));
   const [inputSeconds, setInputSeconds] = useState('00');
   
@@ -16,6 +20,7 @@ export default function TimerPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  // Lofi music playlist
   const [playlist] = useState([
     { id: 1, name: 'Honey Jam', url: '/Lofi.mp3' },
     { id: 2, name: 'Peach Prosecco', url: '/Lofi1.mp3' },
@@ -24,14 +29,12 @@ export default function TimerPage() {
   ]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   
-  // const [songName, setSongName] = useState(playlist[0]?.name || 'No song loaded');
+  // Get current song name from playlist
   const songName = playlist[currentTrackIndex]?.name || 'No song loaded';
 
-  // Track loop state (loopTrack is a boolean)
+  // Loop settings - use refs to avoid re-renders in event handlers
   const [loopTrack, setLoopTrack] = useState(true);
   const [loopPlaylist, setLoopPlaylist] = useState(false);
-
-  // Use refs to track loop state without causing re-renders
   const loopTrackRef = useRef(loopTrack);
   const loopPlaylistRef = useRef(loopPlaylist);
   
@@ -39,7 +42,7 @@ export default function TimerPage() {
   useEffect(() => {
     loopTrackRef.current = loopTrack;
   }, [loopTrack]);
-  
+
   useEffect(() => {
     loopPlaylistRef.current = loopPlaylist;
   }, [loopPlaylist]);
@@ -47,7 +50,7 @@ export default function TimerPage() {
   // Error state for audio playback issues
   const [audioError, setAudioError] = useState('');
 
-  // Load default timer on component mount and when localStorage changes
+  // Load default timer on component mount
   useEffect(() => {
     const savedTimer = parseInt(localStorage.getItem('najahDefaultTimer')) || 25;
     if (!isRunning && minutes === defaultTimerMinutes && seconds === 0) {
@@ -56,7 +59,7 @@ export default function TimerPage() {
     }
   }, []);
 
-  // Initialize audio service on component mount
+  // Initialize audio service and set up event listeners
   useEffect(() => {
     audioService.init(playlist, currentTrackIndex);
     audioService.setLoop(loopTrack);
