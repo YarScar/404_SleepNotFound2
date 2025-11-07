@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/Pages.css";
 
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState(() => {
     try {
@@ -21,6 +22,7 @@ export default function TasksPage() {
     }
   });
 
+
   const [newSubject, setNewSubject] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newPriority, setNewPriority] = useState("Medium");
@@ -29,6 +31,7 @@ export default function TasksPage() {
   const [editValues, setEditValues] = useState({ subject: "", description: "" });
   const [filter, setFilter] = useState("All");
 
+  // Save tasks to local storage
   useEffect(() => {
     try {
       localStorage.setItem("tasks_v1", JSON.stringify(tasks));
@@ -37,10 +40,12 @@ export default function TasksPage() {
     }
   }, [tasks]);
 
+
   function toggleDone(id) {
     setTasks(prev => prev.map(t => (t.id === id ? { ...t, done: !t.done } : t)));
   }
 
+  // Add a new task
   function addTask(e) {
     e.preventDefault();
     const subject = newSubject.trim();
@@ -61,9 +66,11 @@ export default function TasksPage() {
     setNewDueDate("");
   }
 
+  // Remove a task
   function removeTask(id) {
     setTasks(prev => prev.filter(t => t.id !== id));
   }
+
 
   function startEdit(task) {
     setEditingId(task.id);
@@ -80,6 +87,7 @@ export default function TasksPage() {
     setTasks(prev => prev.map(t => (t.id === id ? { ...t, ...patch } : t)));
   }
 
+  // Subtasks
   function addSubtask(taskId, text) {
     if (!text) return;
     setTasks(prev => prev.map(t => {
@@ -96,13 +104,15 @@ export default function TasksPage() {
     }));
   }
 
+
   const todayISO = new Date().toISOString().slice(0,10);
+// Filter tasks
   function matchesFilter(t) {
     if (filter === 'All') return true;
     if (filter === 'Today') return t.dueDate === todayISO;
     return (t.priority || 'Medium') === filter;
   }
-
+// Render & JSX
   return (
     <>
     <div className="page tasks-page">
@@ -249,13 +259,14 @@ export default function TasksPage() {
                         </>
                       ) : (
                         <>
-                          <button className="profile-edit-btn" title="Edit" onClick={() => startEdit(task)} aria-label={`Edit ${task.subject}`}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-                              <path d="M12 20h9" />
-                              <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
-                            </svg>
-                          </button>
-                          <button className="profile-action-btn danger task-delete-button" title="Delete" onClick={() => removeTask(task.id)} aria-label={`Delete ${task.subject}`}>
+                          {/* Removed inline Edit button per request. Center the Delete button and reuse tasks-add-button styling for consistent look. */}
+                          <button
+                            className="profile-action-btn danger task-delete-button tasks-add-button"
+                            title="Delete"
+                            onClick={() => removeTask(task.id)}
+                            aria-label={`Delete ${task.subject}`}
+                            style={{ display: 'block', margin: '0.6rem auto' }}
+                          >
                             Delete
                           </button>
                         </>
@@ -290,12 +301,26 @@ export default function TasksPage() {
   );
 }
 
+// SubtaskAdder component
 function SubtaskAdder({ onAdd }) {
   const [text, setText] = useState('');
   return (
-    <form onSubmit={(e) => { e.preventDefault(); if (!text.trim()) return; onAdd(text.trim()); setText(''); }} className="subtask-form">
-      <input value={text} onChange={e => setText(e.target.value)} placeholder="Add subtask" className="subtask-input" />
-      <button type="submit" className="tasks-add-button">Add</button>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!text.trim()) return;
+        onAdd(text.trim());
+        setText('');
+      }}
+      className="subtask-form"
+    >
+      <input
+        value={text}
+        onChange={e => setText(e.target.value)}
+        placeholder="Add subtask (press Enter to add)"
+        className="subtask-input"
+      />
+      {/* Removed the visible Add button per request; users can press Enter to submit the subtask. */}
     </form>
   );
 }
