@@ -63,8 +63,13 @@ export default function TimerPage() {
       }
     };
     const onTrackChange = (idx) => {
+      // update current track index and sync playback info; songName is derived elsewhere
       setCurrentTrackIndex(idx);
-      setSongName(playlist[idx]?.name || '');
+      const a = audioService.getAudio();
+      if (a) {
+        setDuration(a.duration || 0);
+        setCurrentTime(a.currentTime || 0);
+      }
     };
 
     audioService.on('timeupdate', onTime);
