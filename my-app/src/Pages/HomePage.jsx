@@ -58,11 +58,12 @@ export default function HomePage() {
   }
 
   return ( 
-    <div className="home-page"> 
-      <CloudDecoration />
-      
-      {/* Hero Section */}
-      <div className="hero-section">
+    <>
+      <div className="home-page"> 
+        <CloudDecoration />
+        
+        {/* Hero Section */}
+        <div className="hero-section">
         <div className="profile-icon">
           <img src={najahLogo} alt="Najah Logo" className="logo-image" />
         </div>
@@ -134,5 +135,23 @@ export default function HomePage() {
         </div>
       </div>
     </div>
+      
+    {/* Floating Bubbles */}
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    </>
   );
 }

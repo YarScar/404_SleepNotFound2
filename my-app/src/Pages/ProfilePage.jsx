@@ -154,6 +154,7 @@ export default function ProfilePage() {
   ];
 
   return (
+    <>
     <div className="profile-page">
       <CloudDecoration />
 
@@ -299,5 +300,23 @@ export default function ProfilePage() {
         <button className="profile-action-btn danger">Sign Out</button>
       </div>
     </div>
+
+    {/* Floating Bubbles */}
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    </>
   );
 }

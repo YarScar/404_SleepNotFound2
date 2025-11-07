@@ -36,42 +36,52 @@ export default function HomeworkHelpPage() {
     setIsTyping(true);
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a helpful homework assistant. Help students understand concepts by explaining them clearly and guiding them through problems step by step. Be encouraging and educational.'
-            },
-            ...messages.map(msg => ({
-              role: msg.role,
-              content: msg.content
-            })),
-            {
-              role: 'user',
-              content: userMessage.content
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 500
-        })
-      });
+      // Build conversation history for Gemini
+      const conversationHistory = messages
+        .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+        .join('\n\n');
+      
+      const fullPrompt = `You are a helpful homework assistant. Help students understand concepts by explaining them clearly and guiding them through problems step by step. Be encouraging and educational.
+
+Previous conversation:
+${conversationHistory}
+
+User: ${userMessage.content}
+
+Please respond:`;
+
+      // Call Gemini API
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      console.log('Using API key:', apiKey ? 'Key exists' : 'No key found');
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: fullPrompt
+              }]
+            }]
+          })
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('API request failed');
+        const errorData = await response.json().catch(() => null);
+        console.error('API Error:', response.status, errorData);
+        throw new Error(`API request failed: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('API Response:', data);
       const aiResponse = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: data.choices[0].message.content
+        content: data.candidates[0].content.parts[0].text
       };
       
       setMessages(prev => [...prev, aiResponse]);
@@ -80,7 +90,7 @@ export default function HomeworkHelpPage() {
       const errorResponse = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again later.'
+        content: `Sorry, I encountered an error: ${error.message}. Please check the console for details.`
       };
       setMessages(prev => [...prev, errorResponse]);
     } finally {

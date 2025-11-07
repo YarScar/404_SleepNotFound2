@@ -239,6 +239,7 @@ export default function TimerPage() {
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
+    <>
     <div className="timer-page">
       <div className="timer-hero">
         <div className="timer-icon">
@@ -439,5 +440,23 @@ export default function TimerPage() {
          </div>
        </div>
      </div>
+
+     {/* Floating Bubbles */}
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     <div className="bubble"></div>
+     </>
    );
  }

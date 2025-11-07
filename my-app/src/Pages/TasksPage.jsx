@@ -114,6 +114,7 @@ export default function TasksPage() {
   }
 // Render & JSX
   return (
+    <>
     <div className="page tasks-page">
       <div className="hero-section tasks-hero">
         <div className="tasks-icon profile-icon" aria-hidden>
@@ -279,6 +280,24 @@ export default function TasksPage() {
         </div>
       </section>
     </div>
+
+    {/* Floating Bubbles */}
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    <div className="bubble"></div>
+    </>
   );
 }
 
