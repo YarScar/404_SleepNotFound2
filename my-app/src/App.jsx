@@ -17,6 +17,8 @@ export default function App() {
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/homework-help" element={<HomeworkHelpPage />} />
+          {/* Catch-all route for SPA - redirect to home if route not found */}
+          <Route path="*" element={<HomePage />} />
         </Routes>
         <VolumeControl />
         <Navigation />

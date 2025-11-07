@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import DashboardCard from '../components/DashboardCard'; 
 import CloudDecoration from '../components/CloudDecoration';
 import '../Styles/Pages.css';
-import najahLogo from '../assets/najah logo.png';
+// Using Public folder version to avoid build issues with spaces in filename
+const najahLogo = '/najah-logo.png';
     
 export default function HomePage() {
   const sampleTasks = [
