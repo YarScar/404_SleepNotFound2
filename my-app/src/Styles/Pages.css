@@ -953,8 +953,8 @@
 }
 
 .music-info {
-  background: linear-gradient(135deg, #E9D5FF 0%, #DDD6FE 100%);
-  border: 2px solid #333;
+  /* background: linear-gradient(135deg, #b8956a 0%, #a17d4e 100%); */
+  border: 2px solid #d4a574;
   border-radius: 15px;
   padding: 15px;
   text-align: center;
@@ -1006,8 +1006,8 @@
 }
 
 .music-play-button {
-  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
-  border: 2px solid #333;
+  background: linear-gradient(135deg, #b8956a 0%, #a17d4e 100%);
+  border: 2px solid #d4a574;
   border-radius: 50%;
   width: 48px;
   height: 48px;
@@ -1049,8 +1049,8 @@
 }
 
 .music-nav-button {
-  background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
-  border: 2px solid #333;
+  background: linear-gradient(135deg, #a89584 0%, #8b7a6a 100%);
+  border: 2px solid #d4a574;
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -1078,7 +1078,7 @@
 
 .music-loop-button {
   background: linear-gradient(135deg, #64748B 0%, #475569 100%);
-  border: 2px solid #333;
+  border: 2px solid #d4a574;
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -1100,7 +1100,7 @@
 
 .music-loop-button.active {
   background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-  border-color: #333;
+  border: 2px solid #d4a574;
   animation: loopPulse 2s ease-in-out infinite;
 }
 
