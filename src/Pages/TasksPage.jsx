@@ -4,22 +4,30 @@ import "../Styles/Pages.css";
 
 
 export default function TasksPage() {
-  // Load tasks from localStorage on mount
+// Load tasks from localStorage on mount
   const [tasks, setTasks] = useState(() => {
-    try {
+    // try catch wraps the loading logic to handle errors
+      try {
+      //gets the saved tasks using tasks_v1 key
       const raw = localStorage.getItem("tasks_v1");
       if (!raw) return [];
+      //parse the raw JSON string (converts it back to JS object/array)
       const parsed = JSON.parse(raw);
-      // Normalize task data structure
+      // goes through each task and transforms it to ensure consistent structure
       return parsed.map((t, i) => ({
+      //normalize task fields(making sure all tasks have consistent structure)
+      //if task on left has id, use it, if not make a new one using Date.now() + index
         id: t.id ?? Date.now() + i,
         subject: t.subject ?? t.title ?? "Untitled",
         description: t.description ?? t.task ?? "",
+      //!! double not operator (done = true/false)
         done: !!t.done,
         dueDate: t.dueDate ?? null,
         priority: t.priority ?? "Medium",
+      //checks if subtasks is an array, if not sets it to empty array
         subtasks: Array.isArray(t.subtasks) ? t.subtasks : [],
       }));
+    //won't crash app if there is missing data
     } catch {
       return [];
     }
